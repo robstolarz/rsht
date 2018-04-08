@@ -33,50 +33,43 @@ rsht_create(ht, num_buckets, initial_capacity);
 ```
 insertion:
 ```c
-rsht_entry *e = malloc(sizeof(rsht_entry));
-e->key = strdup("my key");
-e->val = strdup("my val");
+char *key = strdup("my key");
+char *val = strdup("my val");
 
-// if a caller knows the item has never been entered before
-if (!rsht_search(ht, e, RSHT_PUT)) {
+// if a caller knows the value doesn't already exist
+// BEWARE: using it this way can cause memory leaks!
+if (!rsht_put(ht, key, val, NULL)) {
   // handle out of memory error
 }
 
-// if a caller suspects the item may already exist
-rsht_entry *ret = rsht_search(ht, e, RSHT_PUT);
-if (!ret) {
+// if a caller wants to know the previous value and free it
+void *old_val;
+if (!rsht_put(ht, key, val, &old_val)) {
   // handle out of memory error
-} else if (ret != e) {
-  // it was simply updated, time to tear down the object
-  free(e->key);
-  free(e->val); // this is now the previously stored value
-  free(e);
-} else {
-  // it was properly stored
+  free(key);
+}
+if (old_val) {
+  free(key); // if the value existed, we can free the key we just used
+  free(old_val);
 }
 ```
 retrieval:
 ```c
-rsht_entry f = {.key = "my key"}; // stack allocating this is ok
-rsht_entry *ret = rsht_search(ht, &f, RSHT_GET);
+rsht_entry *ret = rsht_get(ht, "key");
 if (ret) {
   // use the item that was found
 } else {
   // handle the lack of an item
 }
-// `f` will go out of scope after this; it can be reused for multiple searches
 ```
 cleanup:
 ```c
 bool entry_destroyer(rsht_entry *e, void *userdata) {
   // however one chooses to destroy entries.
-  // this example assumes entries are heap allocated and `val` might be `NULL`.
-  if (e) {
-    if (e->val)
-      free(e->val);
-    free(e->key)
-    free(e)
-  }
+  // this example assumes `val` might be `NULL` and everything heap allocated.
+  free(e->key);
+  if (e->val)
+    free(e->val);
   return true; // if this were false, the loop would stop
 }
 
