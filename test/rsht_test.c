@@ -10,7 +10,7 @@ bool printer(rsht_entry *ent, void *userdata) {
 }
 
 bool lookerupper(rsht_entry *ent, void *userdata) {
-  assert(ent == rsht_search(userdata, ent, RSHT_GET));
+  assert(ent == rsht_get(userdata, ent->key));
   return true;
 }
 
@@ -18,7 +18,6 @@ bool lookerupper(rsht_entry *ent, void *userdata) {
 bool destructor(rsht_entry *ent, void *userdata) {
   free(ent->key);
   free(ent->val);
-  free(ent);
   return true;
 }
 
@@ -29,15 +28,15 @@ int main(char **argv, int argc) {
     char *str = calloc(2, sizeof(char));
     str[0] = i + 65;
     printf("%s\n", str);
-    rsht_entry *ent = calloc(1, sizeof(rsht_entry));
-    ent->key = str;
-    ent->val = strdup(str);
-    rsht_search(ht, ent, RSHT_PUT);
+    rsht_put(ht, str, strdup(str), NULL);
   }
 
-  rsht_entry e = {.key = "key that definitely doesn't exist"};
-  assert(rsht_search(ht, &e, RSHT_GET) == NULL);
+  assert(rsht_get(ht, "key that definitely doesn't exist") == NULL);
   rsht_foreach(ht, lookerupper, ht);
+  rsht_foreach(ht, printer, NULL);
+  void *old_val;
+  rsht_put(ht, "J", strdup("?"), &old_val);
+  free(old_val);
   rsht_foreach(ht, printer, NULL);
   rsht_foreach(ht, destructor, NULL);
   rsht_destroy(ht);

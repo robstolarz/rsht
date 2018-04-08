@@ -32,7 +32,7 @@ unsigned long djb2(unsigned char *str) {
 
 // bool: did it work?
 static bool setcapacity(rsht_ht *ht, size_t capacity) {
-  rsht_entry **items = realloc(ht->items, capacity * sizeof(rsht_entry *));
+  rsht_entry *items = realloc(ht->items, capacity * sizeof(rsht_entry));
   if (!items) {
     return false;
   }
@@ -68,8 +68,7 @@ fail:
   return NULL;
 }
 
-rsht_entry *rsht_search(rsht_ht *ht, rsht_entry *item, rsht_action action) {
-  unsigned long hash = djb2(item->key);
+rsht_entry *rsht_get_hash(rsht_ht *ht, char *key, unsigned long hash) {
   rsht_entry *entry = NULL;
 
   /* this part of the code asks three questions:
@@ -88,47 +87,49 @@ rsht_entry *rsht_search(rsht_ht *ht, rsht_entry *item, rsht_action action) {
   // first, try looking up the hash
   size_t offset = ht->buckets[hash % ht->num_buckets];
   if (offset)
-    entry = ht->items[offset - 1];
+    entry = &(ht->items[offset - 1]);
 
   if (entry) { // if we found something
     // make sure it's the right thing
-    if (0 != strcmp(entry->key, item->key)) { // if it's the wrong thing
+    if (0 != strcmp(entry->key, key)) { // if it's the wrong thing
       size_t i = 0; // find the right thing
       while (i < ht->num_slots_used && // # items?
-          0 != strcmp(ht->items[i]->key, item->key)) { // matching item?
+          0 != strcmp(ht->items[i].key, key)) { // matching item?
         i++;
       }
 
       if (i == ht->num_slots_used) // if we didn't find it
         entry = NULL; // let the action know
       else
-        entry = ht->items[i]; // looks silly but optimizes away ..?
+        entry = &(ht->items[i]);
     }
   }
-  // if there were an item to find, we should have found it by now
-  switch (action) {
-    case RSHT_GET:
-      return entry;
-    case RSHT_PUT:
-      if (entry) { // if we found it, swap the value into the entry
-        void *temp = entry->val;
-        entry->val = item->val;
-        item->val = temp;
-        return entry;
-      } else if (ht->capacity > ht->num_slots_used ||
-          setcapacity(ht, ht->capacity * RSHT_CAPACITY_SCALE)) {
-        // make sure there's room, or make room
-        ht->items[ht->num_slots_used] = item;
-        ht->buckets[hash % ht->num_buckets] = ht->num_slots_used + 1;
-        ht->num_slots_used++;
-        return item;
-      } else { // we could not make room; blow up
-        return NULL;
-      }
-    default:
-      abort();
-  }
+  return entry;
+}
 
+rsht_entry *rsht_get(rsht_ht *ht, char *key) {
+  return rsht_get_hash(ht, key, djb2(key));
+}
+
+bool rsht_put(rsht_ht *ht, char *key, void *val, void **old_val_ref) {
+  unsigned long hash = djb2(key);
+  rsht_entry *entry = rsht_get_hash(ht, key, hash);
+  if (entry) { // if we found it, swap the value into the entry
+    if (old_val_ref)
+      *old_val_ref = entry->val;
+    entry->val = val;
+    return true;
+  } else if (ht->capacity > ht->num_slots_used ||
+      setcapacity(ht, ht->capacity * RSHT_CAPACITY_SCALE)) {
+    // make sure there's room, or make room
+    ht->items[ht->num_slots_used].key = key;
+    ht->items[ht->num_slots_used].val = val;
+    ht->buckets[hash % ht->num_buckets] = ht->num_slots_used + 1;
+    ht->num_slots_used++;
+    return true;
+  } else { // we could not make room; blow up
+    return false;
+  }
 }
 
 void rsht_destroy(rsht_ht *ht) {
@@ -140,7 +141,7 @@ void rsht_destroy(rsht_ht *ht) {
 
 void rsht_foreach(rsht_ht *ht, rsht_callback fn, void *userdata) {
   for (size_t i = 0; i < ht->num_slots_used; i++) {
-    rsht_entry *entry = ht->items[i];
+    rsht_entry *entry = &(ht->items[i]);
     if (entry->key == NULL)
       continue;
     if (!fn(entry, userdata))
