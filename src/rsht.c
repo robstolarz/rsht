@@ -20,7 +20,7 @@
 #endif
 
 // dan bernstein's djb2 from comp.lang.c, dumbed down
-unsigned long djb2(unsigned char *str) {
+static unsigned long djb2(const unsigned char *str) {
   unsigned long hash = 5381;
   int c;
 
@@ -31,7 +31,7 @@ unsigned long djb2(unsigned char *str) {
 }
 
 // bool: did it work?
-static bool setcapacity(rsht_ht *ht, size_t capacity) {
+static bool setcapacity(rsht_ht *ht, const size_t capacity) {
   rsht_entry *items = realloc(ht->items, capacity * sizeof(rsht_entry));
   if (!items) {
     return false;
@@ -43,7 +43,7 @@ static bool setcapacity(rsht_ht *ht, size_t capacity) {
 
 // hint: only rsht_create should call this, and only once.
 // bool: did it work?
-static bool makebuckets(rsht_ht *ht, size_t num_buckets) {
+static bool makebuckets(rsht_ht *ht, const size_t num_buckets) {
   size_t *buckets = calloc(num_buckets, sizeof(size_t));
   if (!buckets) {
     return false;
@@ -53,7 +53,7 @@ static bool makebuckets(rsht_ht *ht, size_t num_buckets) {
   return true;
 }
 
-rsht_ht *rsht_create(rsht_ht *ht, size_t num_buckets, size_t initial_capacity) {
+rsht_ht *rsht_create(rsht_ht *ht, const size_t num_buckets, const size_t initial_capacity) {
   ht->items = NULL;
   ht->num_slots_used = 0;
   if (!makebuckets(ht, num_buckets))
@@ -68,7 +68,7 @@ fail:
   return NULL;
 }
 
-rsht_entry *rsht_get_hash(rsht_ht *ht, char *key, unsigned long hash) {
+rsht_entry *rsht_get_hash(const rsht_ht *ht, const char *key, const unsigned long hash) {
   rsht_entry *entry = NULL;
 
   /* this part of the code asks three questions:
@@ -85,7 +85,7 @@ rsht_entry *rsht_get_hash(rsht_ht *ht, char *key, unsigned long hash) {
    */
 
   // first, try looking up the hash
-  size_t offset = ht->buckets[hash % ht->num_buckets];
+  const size_t offset = ht->buckets[hash % ht->num_buckets];
   if (offset)
     entry = &(ht->items[offset - 1]);
 
@@ -107,12 +107,12 @@ rsht_entry *rsht_get_hash(rsht_ht *ht, char *key, unsigned long hash) {
   return entry;
 }
 
-rsht_entry *rsht_get(rsht_ht *ht, char *key) {
+rsht_entry *rsht_get(const rsht_ht *ht, const char *key) {
   return rsht_get_hash(ht, key, djb2(key));
 }
 
 bool rsht_put(rsht_ht *ht, char *key, void *val, void **old_val_ref) {
-  unsigned long hash = djb2(key);
+  const unsigned long hash = djb2(key);
   rsht_entry *entry = rsht_get_hash(ht, key, hash);
   if (entry) { // if we found it, swap the value into the entry
     if (old_val_ref)
