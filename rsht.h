@@ -30,9 +30,9 @@ typedef struct rsht_ht {
   size_t *buckets;
 } rsht_ht;
 
-rsht_ht *rsht_create(rsht_ht *ht, size_t num_buckets, size_t initial_capacity);
+rsht_ht *rsht_create(rsht_ht *ht, const size_t num_buckets, const size_t initial_capacity);
 
-rsht_entry *rsht_get(rsht_ht *ht, char *key);
+rsht_entry *rsht_get(const rsht_ht *ht, const char *key);
 bool rsht_put(rsht_ht *ht, char *key, void *val, void **old_val_ref);
 
 void rsht_destroy(rsht_ht *ht);
