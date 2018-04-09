@@ -24,20 +24,16 @@ typedef struct rsht_entry {
 typedef struct rsht_ht {
   size_t capacity;
   size_t num_slots_used;
-  rsht_entry **items;
+  rsht_entry *items;
 
   size_t num_buckets;
   size_t *buckets;
 } rsht_ht;
 
-typedef enum rsht_action {
-  RSHT_GET,
-  RSHT_PUT
-} rsht_action;
-
 rsht_ht *rsht_create(rsht_ht *ht, size_t num_buckets, size_t initial_capacity);
 
-rsht_entry *rsht_search(rsht_ht *ht, rsht_entry *item, rsht_action action);
+rsht_entry *rsht_get(rsht_ht *ht, char *key);
+bool rsht_put(rsht_ht *ht, char *key, void *val, void **old_val_ref);
 
 void rsht_destroy(rsht_ht *ht);
 
