@@ -30,16 +30,22 @@ typedef struct rsht_ht {
   size_t *buckets;
 } rsht_ht;
 
+// returns NULL if we were unable to allocate space for buckets or entries
 rsht_ht *rsht_create(rsht_ht *ht, const size_t num_buckets, const size_t initial_capacity);
 
 rsht_entry *rsht_get(const rsht_ht *ht, const char *key);
+// returns false if we needed to increase capacity but failed to do so
 bool rsht_put(rsht_ht *ht, char *key, void *val, void **old_val_ref);
 
 void rsht_destroy(rsht_ht *ht);
 
+// should return whether to continue iterating or not
 typedef bool (*rsht_callback)(rsht_entry *, void *);
 
-// bool: false ends iteration early
-void rsht_foreach(rsht_ht *ht, rsht_callback fn, void *userdata);
+/* 
+ * the userdata argument will be passed as the second parameter to fn
+ * this routine will return the number of items iterated over (exclusive of an item that fails)
+ */
+size_t rsht_foreach(rsht_ht *ht, rsht_callback fn, void *userdata);
 
 #endif

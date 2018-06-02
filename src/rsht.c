@@ -139,12 +139,17 @@ void rsht_destroy(rsht_ht *ht) {
   free(ht->items);
 }
 
-void rsht_foreach(rsht_ht *ht, rsht_callback fn, void *userdata) {
+size_t rsht_foreach(rsht_ht *ht, rsht_callback fn, void *userdata) {
+  size_t num_iterated = 0;
   for (size_t i = 0; i < ht->num_slots_used; i++) {
     rsht_entry *entry = &(ht->items[i]);
     if (entry->key == NULL)
       continue;
-    if (!fn(entry, userdata))
+    if (fn(entry, userdata)) {
+      num_iterated++;
+    } else {
       break;
+    }
   }
+  return num_iterated;
 }
