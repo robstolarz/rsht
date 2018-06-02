@@ -25,3 +25,8 @@ if (NOT_SUBPROJECT)
   target_link_libraries(rsht_test rsht)
   add_test(the_test rsht_test)
 endif()
+
+set_property(
+  TARGET rsht 
+  PROPERTY C_STANDARD 99
+)

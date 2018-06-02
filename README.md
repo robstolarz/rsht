@@ -13,6 +13,8 @@ rsht avoids copying data, allowing the caller to manage memory as they wish. Thi
 
 ## building
 
+rsht conforms to the C99 standard. To build it,
+
 ```sh
 cd build
 cmake ..
