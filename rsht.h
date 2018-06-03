@@ -10,11 +10,16 @@
  * WITHOUT ANY WARRANTY. See the LICENSE file for more details.
  */
 
-#ifndef __RSHT
-#define __RSHT
+#ifndef RSHT_H
+#define RSHT_H
 
 #include <stdbool.h>
 #include <stddef.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 typedef struct rsht_entry {
   char *key;
@@ -47,5 +52,10 @@ typedef bool (*rsht_callback)(rsht_entry *, void *);
  * this routine will return the number of items iterated over (exclusive of an item that fails)
  */
 size_t rsht_foreach(rsht_ht *ht, rsht_callback fn, void *userdata);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
