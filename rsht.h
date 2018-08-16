@@ -13,8 +13,10 @@
 #ifndef RSHT_H
 #define RSHT_H
 
+#ifndef RSHT_NO_INCLUDES
 #include <stdbool.h>
 #include <stddef.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
