@@ -10,10 +10,12 @@
  * WITHOUT ANY WARRANTY. See the LICENSE file for more details.
  */
 
+#ifdef RSHT_NO_INCLUDES
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../rsht.h"
+#endif
 
 #ifndef RSHT_CAPACITY_SCALE
 #define RSHT_CAPACITY_SCALE 1.5
