@@ -10,10 +10,13 @@
  * WITHOUT ANY WARRANTY. See the LICENSE file for more details.
  */
 
+
+#ifndef RSHT_NO_INCLUDES
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../rsht.h"
+#endif
 
 #ifndef RSHT_CAPACITY_SCALE
 #define RSHT_CAPACITY_SCALE 1.5
@@ -32,7 +35,7 @@ static unsigned long djb2(const unsigned char *str) {
 
 // bool: did it work?
 static bool setcapacity(rsht_ht *ht, const size_t capacity) {
-  rsht_entry *items = realloc(ht->items, capacity * sizeof(rsht_entry));
+  rsht_entry *items = (rsht_entry*)realloc(ht->items, capacity * sizeof(rsht_entry));
   if (!items) {
     return false;
   }
@@ -44,7 +47,7 @@ static bool setcapacity(rsht_ht *ht, const size_t capacity) {
 // hint: only rsht_create should call this, and only once.
 // bool: did it work?
 static bool makebuckets(rsht_ht *ht, const size_t num_buckets) {
-  size_t *buckets = calloc(num_buckets, sizeof(size_t));
+  size_t *buckets = (size_t*)calloc(num_buckets, sizeof(size_t));
   if (!buckets) {
     return false;
   }
@@ -109,11 +112,11 @@ rsht_entry *rsht_get_hash(const rsht_ht *ht, const char *key, const unsigned lon
 }
 
 rsht_entry *rsht_get(const rsht_ht *ht, const char *key) {
-  return rsht_get_hash(ht, key, djb2(key));
+  return rsht_get_hash(ht, key, djb2((const unsigned char *)key));
 }
 
 bool rsht_put(rsht_ht *ht, char *key, void *val, void **old_val_ref) {
-  const unsigned long hash = djb2(key);
+  const unsigned long hash = djb2((const unsigned char *)key);
   rsht_entry *entry = rsht_get_hash(ht, key, hash);
   if (entry) { // if we found it, swap the value into the entry
     if (old_val_ref)
