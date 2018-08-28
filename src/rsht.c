@@ -71,6 +71,8 @@ fail:
 }
 
 rsht_entry *rsht_get_hash(const rsht_ht *ht, const char *key, const unsigned long hash) {
+  rsht_entry *entry = NULL;
+
   /* this part of the code asks three questions:
    * 1) do we know about the item?
    * 2) if we do, does the suggested one match the key we're looking for?
@@ -81,32 +83,29 @@ rsht_entry *rsht_get_hash(const rsht_ht *ht, const char *key, const unsigned lon
    * this will not shrink the table; you must also periodically rebuild the hash table yourself.
    *
    * near offsets, you will see `- 1` or `+ 1`; this is for testing for the
-   * lack of an item. if an offset is the special value, 0, we've never seen the item.
+   * lack of an item. if an offset is 0, we've never seen the item
    */
-
-  rsht_entry *entry = NULL;
 
   // first, try looking up the hash
   const size_t offset = ht->buckets[hash % ht->num_buckets];
   if (offset)
-    entry = &(ht->items[offset - 1]); // since offset is 1-indexed so 0 can be reserved
+    entry = &(ht->items[offset - 1]);
 
-  if (entry) { // if that bucket has been used, make sure its entry contains the right key
-    if (0 != strcmp(entry->key, key)) {
-      // if it's the wrong key, linearly probe for the entry with the correct key
-      size_t i = offset; // start searching right after the (incorrect) entry we found
-      while (i < ht->num_slots_used && // still have slots to probe? and
-          0 != strcmp(ht->items[i].key, key)) { // key still doesn't match?
-        i++; // keep going
+  if (entry) { // if we found something
+    // make sure it's the right thing
+    if (0 != strcmp(entry->key, key)) { // if it's the wrong thing
+      size_t i = offset; // find the right thing
+      while (i < ht->num_slots_used && // # items?
+          0 != strcmp(ht->items[i].key, key)) { // matching item?
+        i++;
       }
 
       if (i == ht->num_slots_used) // if we didn't find it
-        entry = NULL; // let the caller know with a NULL result
+        entry = NULL; // let the action know
       else
         entry = &(ht->items[i]);
     }
   }
-
   return entry;
 }
 
