@@ -94,7 +94,7 @@ rsht_entry *rsht_get_hash(const rsht_ht *ht, const char *key, const unsigned lon
   if (entry) { // if we found something
     // make sure it's the right thing
     if (0 != strcmp(entry->key, key)) { // if it's the wrong thing
-      size_t i = offset; // find the right thing
+      size_t i = 0; // find the right thing
       while (i < ht->num_slots_used && // # items?
           0 != strcmp(ht->items[i].key, key)) { // matching item?
         i++;
