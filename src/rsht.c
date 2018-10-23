@@ -9,6 +9,7 @@
  * terms. It is distributed in the hopes that it will be useful, but
  * WITHOUT ANY WARRANTY. See the LICENSE file for more details.
  */
+ //hey rob i want the hacktober shirt lmao
 
 #ifdef RSHT_NO_INCLUDES
 #include <stdbool.h>
